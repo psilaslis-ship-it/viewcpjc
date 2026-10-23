@@ -12,6 +12,7 @@ git -C "$APP_DIR" fetch --prune origin
 git -C "$APP_DIR" checkout --force "origin/$BRANCH"
 cd "$APP_DIR"
 npm ci --omit=dev
+bash scripts/configure-kiosk.sh
 install -d -o display -g display -m 0750 /var/lib/display
 install -d -o display -g display -m 0750 /var/lib/display/.cache /var/lib/display/.cache/openbox
 chmod 0755 scripts/install.sh scripts/update.sh deploy/xinitrc deploy/display-session.sh deploy/start-displays.sh

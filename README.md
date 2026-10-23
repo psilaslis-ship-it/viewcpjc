@@ -6,6 +6,7 @@ No painel, a cor do contador começa em **contraste automático**: dígitos clar
 
 Os players VGA e HDMI abrem em janelas separadas sem barras do navegador. O `wmctrl` coloca cada janela em tela cheia no respectivo monitor após o Openbox iniciá-la. Em instalações anteriores a esta mudança, instale `wmctrl` uma vez antes de executar o script de atualização; instalações novas já incluem o pacote.
 Se a HDMI estiver desconectada na inicialização, o contador VGA continua funcionando e o player HDMI abre assim que o Xorg detectar a conexão.
+O ponteiro fica oculto nas telas de reprodução após um segundo de inatividade, e o Chromium desses players não oferece tradução de páginas. O script `scripts/configure-kiosk.sh` instala essa configuração no Debian.
 
 ## Executar para desenvolvimento
 

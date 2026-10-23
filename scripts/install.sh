@@ -42,6 +42,7 @@ chmod 0755 "$APP_DIR/scripts/install.sh" "$APP_DIR/scripts/update.sh" "$APP_DIR/
 
 cd "$APP_DIR"
 npm ci --omit=dev
+bash scripts/configure-kiosk.sh
 
 if [[ ! -f "$DATA_DIR/config.json" ]]; then
   install -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0640 config/default.json "$DATA_DIR/config.json"
