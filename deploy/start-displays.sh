@@ -9,27 +9,28 @@ until curl --silent --fail "$BASE_URL/api/state" >/dev/null; do sleep 1; done
 
 # O kernel pode expor HDMI-A-1, enquanto Xorg o chama HDMI-1. Resolve ambos os casos.
 resolve_x_output() {
-  local wanted="$1" prefix="${1%%-*}" candidate
-  candidate=$(xrandr --query | awk -v output="$wanted" '$1 == output {print $1; exit}')
+  local wanted="$1" prefix="${1%%-*}" candidate require_connected="${2:-yes}"
+  candidate=$(xrandr --query | awk -v output="$wanted" -v connected="$require_connected" '$1 == output && (connected == "no" || $2 == "connected") {print $1; exit}')
   if [[ -z "$candidate" ]]; then
     candidate=$(xrandr --query | awk -v type="$prefix" '$1 ~ ("^" type "-") && $2 == "connected" {print $1; exit}')
+  fi
+  if [[ -z "$candidate" && "$require_connected" == "no" ]]; then
+    candidate=$(xrandr --query | awk -v type="$prefix" '$1 ~ ("^" type "-") {print $1; exit}')
   fi
   [[ -n "$candidate" ]] || { echo "Saída Xorg não encontrada para: $wanted" >&2; return 1; }
   printf '%s\n' "$candidate"
 }
-HDMI_OUTPUT=$(resolve_x_output "$HDMI_OUTPUT")
 VGA_OUTPUT=$(resolve_x_output "$VGA_OUTPUT")
+HDMI_OUTPUT=$(resolve_x_output "$HDMI_OUTPUT" no) || HDMI_OUTPUT=""
 echo "Saídas Xorg em uso: HDMI=$HDMI_OUTPUT; VGA=$VGA_OUTPUT"
 
-xrandr --output "$HDMI_OUTPUT" --auto
-xrandr --output "$VGA_OUTPUT" --auto --left-of "$HDMI_OUTPUT"
+xrandr --output "$VGA_OUTPUT" --auto --primary --pos 0x0
 
 geometry_for() {
   xrandr --query | sed -nE "/^$1 connected/ s/.* ([0-9]+x[0-9]+\+[0-9]+\+[0-9]+).*/\1/p" | head -n1
 }
 vga_geometry=$(geometry_for "$VGA_OUTPUT")
-hdmi_geometry=$(geometry_for "$HDMI_OUTPUT")
-[[ -n "$vga_geometry" && -n "$hdmi_geometry" ]] || { echo "Não foi possível determinar as telas em xrandr." >&2; exit 1; }
+[[ -n "$vga_geometry" ]] || { echo "Não foi possível determinar a tela VGA em xrandr." >&2; exit 1; }
 launch() {
   local page="$1" geometry="$2" profile="$3"
   local size="${geometry%%+*}" coords="${geometry#*+}"
@@ -37,9 +38,6 @@ launch() {
   local width="${size%x*}" height="${size#*x}"
   chromium --app="$BASE_URL/$page" --user-data-dir="$profile" --window-position="$x,$y" --window-size="$width,$height" --autoplay-policy=no-user-gesture-required --no-first-run --disable-session-crashed-bubble &
 }
-launch clock.html "$vga_geometry" /var/lib/viewcpjc/chromium-vga
-launch hdmi.html "$hdmi_geometry" /var/lib/viewcpjc/chromium-hdmi
-
 # --app oculta a navegação, mas não remove a moldura do gerenciador de janelas.
 # Aguarda cada janela existir e solicita fullscreen separadamente ao Openbox.
 fullscreen_window() {
@@ -55,6 +53,24 @@ fullscreen_window() {
   echo "Janela não encontrada para tela cheia: $title" >&2
   return 1
 }
-fullscreen_window "Contador VGA"
-fullscreen_window "Player HDMI"
-wait
+
+# A VGA não depende de cabo, TV ou duplicador HDMI. Mantém o Xorg vivo e
+# aguarda a conexão HDMI sem reiniciar o contador.
+launch clock.html "$vga_geometry" /var/lib/viewcpjc/chromium-vga
+fullscreen_window "Contador VGA" || true
+hdmi_started=no
+while true; do
+  if [[ -n "$HDMI_OUTPUT" ]] && xrandr --query | awk -v output="$HDMI_OUTPUT" '$1 == output && $2 == "connected" {found=1} END {exit !found}'; then
+    if [[ "$hdmi_started" == no ]]; then
+      if xrandr --output "$HDMI_OUTPUT" --auto --right-of "$VGA_OUTPUT"; then
+        hdmi_geometry=$(geometry_for "$HDMI_OUTPUT")
+        if [[ -n "$hdmi_geometry" ]]; then
+          launch hdmi.html "$hdmi_geometry" /var/lib/viewcpjc/chromium-hdmi
+          fullscreen_window "Player HDMI" || true
+          hdmi_started=yes
+        fi
+      fi
+    fi
+  fi
+  sleep 2
+done
