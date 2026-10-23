@@ -2,6 +2,8 @@
 
 MVP local para um computador Linux com duas saídas: contador digital na VGA e player de mídia/Holyrics na HDMI. O navegador de cada tela é separado; o painel só controla o estado por Socket.IO na rede local.
 
+No painel, a cor do contador começa em **contraste automático**: dígitos claros sobre fundo escuro e dígitos escuros sobre fundo claro. Em **cor personalizada**, é possível escolher a cor dos dígitos independentemente do fundo. Configurações existentes são preservadas; instalações anteriores passam ao modo automático quando atualizadas.
+
 ## Executar para desenvolvimento
 
 ```bash

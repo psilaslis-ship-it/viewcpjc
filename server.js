@@ -19,13 +19,16 @@ function readConfig() {
   return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
 }
 let config = readConfig();
+// Configurações de instalações anteriores continuam válidas após a atualização.
+if (!['auto', 'manual'].includes(config.clock.colorMode)) config.clock.colorMode = 'auto';
+if (config.clock.running && !Number.isFinite(config.clock.startedAt)) config.clock.startedAt = Date.now();
 function saveConfig() {
   const temp = `${CONFIG_FILE}.tmp`;
   fs.writeFileSync(temp, JSON.stringify(config, null, 2));
   fs.renameSync(temp, CONFIG_FILE);
 }
 function publicState() {
-  return config;
+  return { ...config, serverNow: Date.now() };
 }
 function safeMediaName(name) {
   return `${crypto.randomUUID()}${path.extname(name).toLowerCase()}`;
@@ -48,10 +51,25 @@ app.use(express.static(path.join(APP_ROOT, 'public')));
 function publish() { saveConfig(); io.emit('state', publicState()); }
 app.get('/api/state', (_, res) => res.json(publicState()));
 app.post('/api/clock', (req, res) => {
-  const allowed = ['running', 'elapsedSeconds', 'color', 'background', 'font', 'showTenths'];
-  for (const key of allowed) if (key in req.body) config.clock[key] = req.body[key];
-  if (!Number.isFinite(Number(config.clock.elapsedSeconds)) || Number(config.clock.elapsedSeconds) < 0) return res.status(400).json({ error: 'Tempo inválido' });
-  config.clock.elapsedSeconds = Number(config.clock.elapsedSeconds);
+  const input = req.body || {};
+  if ('elapsedSeconds' in input && (!Number.isFinite(Number(input.elapsedSeconds)) || Number(input.elapsedSeconds) < 0)) return res.status(400).json({ error: 'Tempo inválido' });
+  if ('colorMode' in input && !['auto', 'manual'].includes(input.colorMode)) return res.status(400).json({ error: 'Modo de cor inválido' });
+  if ('font' in input && !['digital', 'mono'].includes(input.font)) return res.status(400).json({ error: 'Fonte inválida' });
+  for (const key of ['color', 'background']) {
+    if (key in input && !/^#[0-9a-f]{6}$/i.test(input[key])) return res.status(400).json({ error: 'Cor inválida' });
+  }
+  const clock = config.clock;
+  if (clock.running && input.running === false) {
+    clock.elapsedSeconds += (Date.now() - clock.startedAt) / 1000;
+    clock.startedAt = null;
+  }
+  if ('elapsedSeconds' in input) clock.elapsedSeconds = Number(input.elapsedSeconds);
+  if (input.running === true && !clock.running) clock.startedAt = Date.now();
+  if ('elapsedSeconds' in input && clock.running) clock.startedAt = Date.now();
+  if ('running' in input) clock.running = input.running === true;
+  for (const key of ['color', 'background', 'font', 'colorMode', 'showTenths']) {
+    if (key in input) clock[key] = input[key];
+  }
   publish(); res.json(config.clock);
 });
 app.post('/api/hdmi', (req, res) => {

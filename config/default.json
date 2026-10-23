@@ -3,6 +3,8 @@
   "clock": {
     "running": false,
     "elapsedSeconds": 0,
+    "startedAt": null,
+    "colorMode": "auto",
     "color": "#ff1a1a",
     "background": "#080808",
     "font": "digital",
