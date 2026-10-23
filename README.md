@@ -15,7 +15,7 @@ Abra `http://IP-DO-SERVIDOR:8080/admin.html`. As telas de reprodução são `clo
 
 O procedimento reproduzível completo, incluindo a instalação do Debian sem desktop, está em [docs/INSTALACAO-PT-BR.md](docs/INSTALACAO-PT-BR.md). Para a instalação e atualização operacional, use respectivamente `scripts/install.sh` e `scripts/update.sh`.
 
-## Implantação manual resumida (Debian 13 / Ubuntu Server)
+## Implantação manual resumida (Debian 13)
 
 1. Instale `nodejs`, `chromium`, `xserver-xorg`, um WM leve (Openbox ou i3), `fonts-dseg`, e os drivers gráficos corretos. O pacote `fonts-dseg` fornece a fonte de sete segmentos usada como padrão pelo contador.
 2. Copie a aplicação para `/opt/dual-display-player`; crie o usuário de serviço `display` e o diretório `/var/lib/dual-display-player` pertencentes a ele.
