@@ -7,8 +7,22 @@ source /etc/viewcpjc/display.conf
 # Aguarda o painel estar pronto após boot/reinício.
 until curl --silent --fail "$BASE_URL/api/state" >/dev/null; do sleep 1; done
 
-xrandr --output "$VGA_OUTPUT" --auto --left-of "$HDMI_OUTPUT"
+# O kernel pode expor HDMI-A-1, enquanto Xorg o chama HDMI-1. Resolve ambos os casos.
+resolve_x_output() {
+  local wanted="$1" prefix="${1%%-*}" candidate
+  candidate=$(xrandr --query | awk -v output="$wanted" '$1 == output {print $1; exit}')
+  if [[ -z "$candidate" ]]; then
+    candidate=$(xrandr --query | awk -v type="$prefix" '$1 ~ ("^" type "-") && $2 == "connected" {print $1; exit}')
+  fi
+  [[ -n "$candidate" ]] || { echo "Saída Xorg não encontrada para: $wanted" >&2; return 1; }
+  printf '%s\n' "$candidate"
+}
+HDMI_OUTPUT=$(resolve_x_output "$HDMI_OUTPUT")
+VGA_OUTPUT=$(resolve_x_output "$VGA_OUTPUT")
+echo "Saídas Xorg em uso: HDMI=$HDMI_OUTPUT; VGA=$VGA_OUTPUT"
+
 xrandr --output "$HDMI_OUTPUT" --auto
+xrandr --output "$VGA_OUTPUT" --auto --left-of "$HDMI_OUTPUT"
 
 geometry_for() {
   xrandr --query | sed -nE "/^$1 connected/ s/.* ([0-9]+x[0-9]+\+[0-9]+\+[0-9]+).*/\1/p" | head -n1
