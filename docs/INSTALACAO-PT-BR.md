@@ -26,7 +26,7 @@ cd viewcpjc
 sudo ./scripts/install.sh
 ```
 
-O instalador instala dependências, baixa a cópia operacional em `/opt/viewcpjc`, cria os serviços de inicialização e preserva dados em `/var/lib/viewcpjc`.
+O instalador instala dependências, baixa a cópia operacional em `/opt/viewcpjc`, cria os serviços de inicialização e preserva dados em `/var/lib/viewcpjc`. Com HDMI e VGA conectados, ele detecta e grava automaticamente os nomes das saídas Linux no primeiro uso.
 
 ## 4. Associar HDMI e VGA corretamente
 
