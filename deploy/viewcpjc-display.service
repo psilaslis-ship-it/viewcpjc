@@ -5,11 +5,11 @@ Requires=viewcpjc.service
 
 [Service]
 Type=simple
-User=display
 Environment=HOME=/var/lib/display
 Environment=DATA_DIR=/var/lib/viewcpjc
 WorkingDirectory=/opt/viewcpjc
-ExecStart=/usr/bin/xinit /opt/viewcpjc/deploy/xinitrc -- :0 vt7 -nolisten tcp
+# Xorg precisa abrir o VT; os players continuam no usuário sem privilégios "display".
+ExecStart=/usr/bin/xinit /usr/sbin/runuser -u display -- /opt/viewcpjc/deploy/xinitrc -- :0 vt7 -nolisten tcp -ac
 Restart=always
 RestartSec=5
 
