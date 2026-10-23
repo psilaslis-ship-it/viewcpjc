@@ -39,4 +39,22 @@ launch() {
 }
 launch clock.html "$vga_geometry" /var/lib/viewcpjc/chromium-vga
 launch hdmi.html "$hdmi_geometry" /var/lib/viewcpjc/chromium-hdmi
+
+# --app oculta a navegação, mas não remove a moldura do gerenciador de janelas.
+# Aguarda cada janela existir e solicita fullscreen separadamente ao Openbox.
+fullscreen_window() {
+  local title="$1" attempt
+  for ((attempt=0; attempt<60; attempt++)); do
+    if wmctrl -l | grep -Fq "$title"; then
+      wmctrl -r "$title" -b add,fullscreen
+      echo "Tela cheia ativada: $title"
+      return 0
+    fi
+    sleep 0.5
+  done
+  echo "Janela não encontrada para tela cheia: $title" >&2
+  return 1
+}
+fullscreen_window "Contador VGA"
+fullscreen_window "Player HDMI"
 wait

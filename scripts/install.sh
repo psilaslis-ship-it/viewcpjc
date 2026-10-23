@@ -20,7 +20,7 @@ done
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
-apt-get install -y --no-install-recommends git curl nodejs npm chromium xserver-xorg xserver-xorg-legacy xinit openbox dbus-x11 fonts-dseg ca-certificates
+apt-get install -y --no-install-recommends git curl nodejs npm chromium xserver-xorg xserver-xorg-legacy xinit openbox wmctrl dbus-x11 fonts-dseg ca-certificates
 
 if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
   useradd --system --create-home --home-dir "/var/lib/$SERVICE_USER" --groups video,render "$SERVICE_USER"

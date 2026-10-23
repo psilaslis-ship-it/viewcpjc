@@ -6,6 +6,7 @@ BRANCH="main"
 [[ $EUID -eq 0 ]] || { echo "Execute com sudo." >&2; exit 1; }
 [[ -d "$APP_DIR/.git" ]] || { echo "Aplicação não instalada em $APP_DIR. Execute install.sh primeiro." >&2; exit 1; }
 
+apt-get install -y --no-install-recommends wmctrl
 systemctl stop viewcpjc-display.service viewcpjc.service
 git -C "$APP_DIR" fetch --prune origin
 git -C "$APP_DIR" checkout --force "origin/$BRANCH"

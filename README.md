@@ -4,6 +4,8 @@ MVP local para um computador Linux com duas saídas: contador digital na VGA e p
 
 No painel, a cor do contador começa em **contraste automático**: dígitos claros sobre fundo escuro e dígitos escuros sobre fundo claro. Em **cor personalizada**, é possível escolher a cor dos dígitos independentemente do fundo. Configurações existentes são preservadas; instalações anteriores passam ao modo automático quando atualizadas.
 
+Os players VGA e HDMI abrem em janelas separadas sem barras do navegador. O `wmctrl` coloca cada janela em tela cheia no respectivo monitor após o Openbox iniciá-la. Em instalações anteriores a esta mudança, instale `wmctrl` uma vez antes de executar o script de atualização; instalações novas já incluem o pacote.
+
 ## Executar para desenvolvimento
 
 ```bash
