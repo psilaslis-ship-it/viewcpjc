@@ -36,7 +36,7 @@ else
   git clone --branch "$BRANCH" --depth 1 "$REPO_URL" "$APP_DIR"
 fi
 chown -R root:root "$APP_DIR"
-chmod 0755 "$APP_DIR/scripts/install.sh" "$APP_DIR/scripts/update.sh" "$APP_DIR/deploy/xinitrc" "$APP_DIR/deploy/start-displays.sh"
+chmod 0755 "$APP_DIR/scripts/install.sh" "$APP_DIR/scripts/update.sh" "$APP_DIR/deploy/xinitrc" "$APP_DIR/deploy/display-session.sh" "$APP_DIR/deploy/start-displays.sh"
 
 cd "$APP_DIR"
 npm ci --omit=dev

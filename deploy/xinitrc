@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
-export DISPLAY=:0
-xset -dpms
-xset s off
-xset s noblank
-openbox &
-exec /opt/viewcpjc/deploy/start-displays.sh
+# O cliente do xinit começa como root para que o Xorg possa adquirir o VT.
+# Toda a sessão visual é imediatamente rebaixada ao usuário dedicado display.
+exec /usr/sbin/runuser -u display --preserve-environment -- /opt/viewcpjc/deploy/display-session.sh

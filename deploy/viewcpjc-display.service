@@ -8,8 +8,8 @@ Type=simple
 Environment=HOME=/var/lib/display
 Environment=DATA_DIR=/var/lib/viewcpjc
 WorkingDirectory=/opt/viewcpjc
-# Xorg precisa abrir o VT; os players continuam no usuário sem privilégios "display".
-ExecStart=/usr/bin/xinit /usr/sbin/runuser -u display -- /opt/viewcpjc/deploy/xinitrc -- :0 vt7 -nolisten tcp -ac
+# Xorg precisa abrir o VT; xinitrc delega os players ao usuário sem privilégios "display".
+ExecStart=/usr/bin/xinit /opt/viewcpjc/deploy/xinitrc -- :0 vt7 -nolisten tcp -ac
 Restart=always
 RestartSec=5
 

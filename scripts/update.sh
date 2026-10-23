@@ -11,7 +11,7 @@ git -C "$APP_DIR" fetch --prune origin
 git -C "$APP_DIR" checkout --force "origin/$BRANCH"
 cd "$APP_DIR"
 npm ci --omit=dev
-chmod 0755 scripts/install.sh scripts/update.sh deploy/xinitrc deploy/start-displays.sh
+chmod 0755 scripts/install.sh scripts/update.sh deploy/xinitrc deploy/display-session.sh deploy/start-displays.sh
 install -m 0644 deploy/viewcpjc.service /etc/systemd/system/viewcpjc.service
 install -m 0644 deploy/viewcpjc-display.service /etc/systemd/system/viewcpjc-display.service
 systemctl daemon-reload
