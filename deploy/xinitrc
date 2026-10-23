@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+export DISPLAY=:0
+xset -dpms
+xset s off
+xset s noblank
+openbox &
+exec /opt/viewcpjc/deploy/start-displays.sh

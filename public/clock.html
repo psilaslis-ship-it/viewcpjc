@@ -1,0 +1,6 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contador VGA</title><link rel="stylesheet" href="/displays.css"><script src="/socket.io/socket.io.js"></script><script src="/common.js"></script></head><body class="clock-body"><main id="clock" aria-label="Contador">00:00:00</main><script>
+let offset=0, running=false, started=Date.now(), tenths=false;
+function format(seconds){const t=Math.max(0, seconds);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60);return [h,m,s].map(v=>String(v).padStart(2,'0')).join(':')+(tenths?'.'+String(Math.floor((t%1)*10)): '');}
+function tick(){ const now = offset+(running?(Date.now()-started)/1000:0); document.querySelector('#clock').textContent=format(now); requestAnimationFrame(tick); } tick();
+addEventListener('display-state', e=>{const c=e.detail.clock; const current=offset+(running?(Date.now()-started)/1000:0); if(c.running!==running || Math.abs(c.elapsedSeconds-current)>0.2){offset=c.elapsedSeconds; running=c.running; started=Date.now();} tenths=c.showTenths; document.body.style.background=c.background; const el=document.querySelector('#clock'); el.style.color=c.color; el.dataset.font=c.font;});
+</script></body></html>

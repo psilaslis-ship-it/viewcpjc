@@ -1,0 +1,5 @@
+# Descubra os nomes reais com: DISPLAY=:0 xrandr --query
+# Exemplos: HDMI-1, HDMI-A-0, VGA-1, DVI-I-1. Não use os exemplos sem conferir.
+HDMI_OUTPUT="HDMI-1"
+VGA_OUTPUT="VGA-1"
+# A VGA fica à esquerda da HDMI. Inverta a opção no start-displays.sh se necessário.

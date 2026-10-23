@@ -1,0 +1,24 @@
+{
+  "network": { "port": 8080 },
+  "clock": {
+    "running": false,
+    "elapsedSeconds": 0,
+    "color": "#ff1a1a",
+    "background": "#080808",
+    "font": "digital",
+    "showTenths": false
+  },
+  "hdmi": {
+    "mode": "message",
+    "source": "",
+    "fit": "contain",
+    "message": "Aguardando conteúdo"
+  },
+  "holyricsRoutes": [
+    { "name": "Widescreen", "url": "http://169.254.83.107:80/view/widescreen" },
+    { "name": "Standard", "url": "http://169.254.83.107:80/view/standard" },
+    { "name": "Texto", "url": "http://169.254.83.107:80/view/text" },
+    { "name": "Texto 2", "url": "http://169.254.83.107:80/view/text2" },
+    { "name": "Texto 3", "url": "http://169.254.83.107:80/view/text3" }
+  ]
+}

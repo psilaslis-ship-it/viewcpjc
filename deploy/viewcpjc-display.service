@@ -1,0 +1,17 @@
+[Unit]
+Description=ViewCPJC - players VGA e HDMI
+After=viewcpjc.service
+Requires=viewcpjc.service
+
+[Service]
+Type=simple
+User=display
+Environment=HOME=/var/lib/display
+Environment=DATA_DIR=/var/lib/viewcpjc
+WorkingDirectory=/opt/viewcpjc
+ExecStart=/usr/bin/xinit /opt/viewcpjc/deploy/xinitrc -- :0 vt7 -nolisten tcp
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
