@@ -32,18 +32,11 @@ hdmi_geometry=$(geometry_for "$HDMI_OUTPUT")
 [[ -n "$vga_geometry" && -n "$hdmi_geometry" ]] || { echo "Não foi possível determinar as telas em xrandr." >&2; exit 1; }
 launch() {
   local page="$1" geometry="$2" profile="$3"
-  local size="${geometry%%+*}" coords="${geometry#*+}" x="${coords%%+*}" y="${coords#*+}"
+  local size="${geometry%%+*}" coords="${geometry#*+}"
+  local x="${coords%%+*}" y="${coords#*+}"
   local width="${size%x*}" height="${size#*x}"
   chromium --app="$BASE_URL/$page" --user-data-dir="$profile" --window-position="$x,$y" --window-size="$width,$height" --autoplay-policy=no-user-gesture-required --no-first-run --disable-session-crashed-bubble &
 }
 launch clock.html "$vga_geometry" /var/lib/viewcpjc/chromium-vga
 launch hdmi.html "$hdmi_geometry" /var/lib/viewcpjc/chromium-hdmi
 wait
-
-# Cada janela é um processo Chromium distinto. O conteúdo e a conexão Socket.IO são independentes.
-chromium --kiosk --app="$BASE_URL/clock.html" --class=VgaClock --start-fullscreen &
-sleep 1
-chromium --kiosk --app="$BASE_URL/hdmi.html" --class=HdmiPlayer --start-fullscreen &
-
-# Posicionamento explícito por saída: pode ser personalizado em um WM leve (openbox/i3).
-# Para validar nomes/posições: DISPLAY=:0 xrandr --query

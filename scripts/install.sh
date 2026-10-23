@@ -25,6 +25,7 @@ apt-get install -y --no-install-recommends git curl nodejs npm chromium xserver-
 if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
   useradd --system --create-home --home-dir "/var/lib/$SERVICE_USER" --groups video,render "$SERVICE_USER"
 fi
+install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0750 "/var/lib/$SERVICE_USER"
 install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0750 "$DATA_DIR" "$DATA_DIR/uploads" "$DATA_DIR/chromium-vga" "$DATA_DIR/chromium-hdmi"
 install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0750 "/var/lib/$SERVICE_USER/.cache" "/var/lib/$SERVICE_USER/.cache/openbox"
 install -d -m 0755 "$ETC_DIR"
