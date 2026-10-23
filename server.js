@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const multer = require('multer');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -21,6 +20,7 @@ function readConfig() {
 let config = readConfig();
 // Configurações de instalações anteriores continuam válidas após a atualização.
 if (!['auto', 'manual'].includes(config.clock.colorMode)) config.clock.colorMode = 'auto';
+if (typeof config.clock.showSeconds !== 'boolean') config.clock.showSeconds = true;
 if (config.clock.running && !Number.isFinite(config.clock.startedAt)) config.clock.startedAt = Date.now();
 function saveConfig() {
   const temp = `${CONFIG_FILE}.tmp`;
@@ -51,6 +51,18 @@ app.use(express.static(path.join(APP_ROOT, 'public')));
 
 function publish() { saveConfig(); io.emit('state', publicState()); }
 app.get('/api/state', (_, res) => res.json(publicState()));
+app.get('/api/holyrics-check', async (req, res) => {
+  const url = req.query.url;
+  if (!validHttpUrl(url)) return res.status(400).json({ error: 'URL do Holyrics inválida' });
+  const started = Date.now();
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    await response.body?.cancel();
+    res.json({ ok: response.ok, status: response.status, elapsedMs: Date.now() - started });
+  } catch (error) {
+    res.json({ ok: false, error: error.cause?.code || error.name || 'Falha de conexão', elapsedMs: Date.now() - started });
+  }
+});
 app.post('/api/clock', (req, res) => {
   const input = req.body || {};
   if ('elapsedSeconds' in input && (!Number.isFinite(Number(input.elapsedSeconds)) || Number(input.elapsedSeconds) < 0)) return res.status(400).json({ error: 'Tempo inválido' });
@@ -68,7 +80,7 @@ app.post('/api/clock', (req, res) => {
   if (input.running === true && !clock.running) clock.startedAt = Date.now();
   if ('elapsedSeconds' in input && clock.running) clock.startedAt = Date.now();
   if ('running' in input) clock.running = input.running === true;
-  for (const key of ['color', 'background', 'font', 'colorMode', 'showTenths']) {
+  for (const key of ['color', 'background', 'font', 'colorMode', 'showSeconds', 'showTenths']) {
     if (key in input) clock[key] = input[key];
   }
   publish(); res.json(config.clock);
@@ -89,18 +101,26 @@ app.post('/api/holyrics-routes', (req, res) => {
   if (!name || !validHttpUrl(url)) return res.status(400).json({ error: 'Nome e URL HTTP(S) são obrigatórios.' });
   config.holyricsRoutes.push({ name: String(name).slice(0, 80), url }); publish(); res.status(201).json(config.holyricsRoutes);
 });
+app.post('/api/holyrics-host', (req, res) => {
+  let host;
+  try { host = new URL(req.body?.origin); } catch { return res.status(400).json({ error: 'Informe uma URL como http://192.168.15.50:80' }); }
+  if (!['http:', 'https:'].includes(host.protocol) || host.pathname !== '/' || host.search || host.hash || host.username || host.password) {
+    return res.status(400).json({ error: 'Informe apenas protocolo, IP e porta; sem caminho.' });
+  }
+  const replaceHost = address => {
+    const url = new URL(address);
+    url.protocol = host.protocol;
+    url.host = host.host;
+    return url.href;
+  };
+  config.holyricsRoutes = config.holyricsRoutes.map(route => ({ ...route, url: replaceHost(route.url) }));
+  if (config.hdmi.mode === 'holyrics' && validHttpUrl(config.hdmi.source)) config.hdmi.source = replaceHost(config.hdmi.source);
+  publish(); res.json({ origin: host.origin, routes: config.holyricsRoutes.length });
+});
 app.delete('/api/holyrics-routes/:index', (req, res) => {
   const i = Number(req.params.index);
   if (!Number.isInteger(i) || i < 0 || i >= config.holyricsRoutes.length) return res.status(404).end();
   config.holyricsRoutes.splice(i, 1); publish(); res.status(204).end();
-});
-
-// O proxy é intencional: o player HDMI carrega o Holyrics pela mesma origem e não cria polling/screenshot.
-app.use('/holyrics', (req, res, next) => {
-  const raw = req.query.url;
-  if (!validHttpUrl(raw)) return res.status(400).send('Informe ?url=<URL HTTP(S)>');
-  const target = new URL(raw);
-  return createProxyMiddleware({ target: target.origin, changeOrigin: true, ws: true, pathRewrite: () => `${target.pathname}${target.search}`, on: { proxyRes(proxyRes) { delete proxyRes.headers['x-frame-options']; delete proxyRes.headers['content-security-policy']; } } })(req, res, next);
 });
 
 io.on('connection', socket => socket.emit('state', publicState()));

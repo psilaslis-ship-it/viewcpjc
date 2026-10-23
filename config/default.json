@@ -8,6 +8,7 @@
     "color": "#ff1a1a",
     "background": "#080808",
     "font": "digital",
+    "showSeconds": true,
     "showTenths": false
   },
   "hdmi": {

@@ -28,15 +28,16 @@ function setClock(patch) {
 function setHdmi(payload) {
   return api('/api/hdmi', { method: 'POST', body: JSON.stringify(payload) });
 }
-function formatTime(seconds, tenths) {
+function formatTime(seconds, showSeconds, tenths) {
   const whole = Math.floor(Math.max(0, seconds));
-  const parts = [Math.floor(whole / 3600), Math.floor(whole % 3600 / 60), whole % 60].map(value => String(value).padStart(2, '0'));
-  return parts.join(':') + (tenths ? '.' + Math.floor((seconds % 1) * 10) : '');
+  const parts = [Math.floor(whole / 3600), Math.floor(whole % 3600 / 60)];
+  if (showSeconds) parts.push(whole % 60);
+  return parts.map(value => String(value).padStart(2, '0')).join(':') + (showSeconds && tenths ? '.' + Math.floor((seconds % 1) * 10) : '');
 }
 function updatePreview() {
   if (!state) return;
   const clock = state.clock;
-  $('#clockPreview').textContent = formatTime(clockSeconds(clock), clock.showTenths);
+  $('#clockPreview').textContent = formatTime(clockSeconds(clock), clock.showSeconds !== false, clock.showTenths);
   $('#clockScreen').style.backgroundColor = clock.background;
   $('#clockPreview').style.color = clockColor(clock);
   $('#clockPreview').classList.toggle('mono', clock.font === 'mono');
@@ -80,13 +81,16 @@ function sync(next) {
   $('#colorHex').textContent = clock.color.toUpperCase();
   $('#bgHex').textContent = clock.background.toUpperCase();
   $('#font').value = clock.font;
+  $('#seconds').checked = clock.showSeconds !== false;
   $('#tenths').checked = clock.showTenths;
+  $('#tenths').disabled = clock.showSeconds === false;
   const mode = clock.colorMode === 'manual' ? 'manual' : 'auto';
   document.querySelector('input[name="colorMode"][value="' + mode + '"]').checked = true;
   $('#manualColorField').hidden = mode !== 'manual';
   updatePreview();
   updateHdmi(next.hdmi);
   updateRoutes(next.holyricsRoutes);
+  if (document.activeElement !== $('#holyricsHost') && next.holyricsRoutes.length) $('#holyricsHost').value = new URL(next.holyricsRoutes[0].url).origin;
 }
 addEventListener('display-state', event => sync(event.detail));
 socket.on('connect', () => { $('#status').classList.remove('offline'); $('#statusText').textContent = 'Conectado'; });
@@ -100,6 +104,7 @@ $('#reset').addEventListener('click', () => {
 $('#clockColor').addEventListener('change', event => setClock({ color: event.target.value }));
 $('#clockBg').addEventListener('change', event => setClock({ background: event.target.value }));
 $('#font').addEventListener('change', event => setClock({ font: event.target.value }));
+$('#seconds').addEventListener('change', event => setClock({ showSeconds: event.target.checked }));
 $('#tenths').addEventListener('change', event => setClock({ showTenths: event.target.checked }));
 document.querySelectorAll('input[name="colorMode"]').forEach(input => input.addEventListener('change', event => {
   if (event.target.checked) setClock({ colorMode: event.target.value });
@@ -115,6 +120,14 @@ function showMode(name) {
 $('#modeMessage').addEventListener('click', () => showMode('message'));
 $('#modeUpload').addEventListener('click', () => showMode('upload'));
 $('#modeHolyrics').addEventListener('click', () => showMode('holyrics'));
+$('#checkHolyrics').addEventListener('click', async () => {
+  const output = $('#holyricsCheckResult');
+  output.textContent = 'Testando a partir do ViewCPJC…';
+  try {
+    const result = await api('/api/holyrics-check?url=' + encodeURIComponent($('#routeSelect').value));
+    output.textContent = result.ok ? `Conexão OK · HTTP ${result.status} · ${result.elapsedMs} ms` : `Sem resposta válida · ${result.error || 'HTTP ' + result.status}`;
+  } catch (error) { output.textContent = error.message; }
+});
 $('#messageForm').addEventListener('submit', event => {
   event.preventDefault();
   setHdmi({ mode: 'message', message: new FormData(event.target).get('message') }).then(() => toast('Mensagem enviada à HDMI.')).catch(error => toast(error.message, true));
@@ -145,5 +158,13 @@ $('#routeForm').addEventListener('submit', async event => {
     await api('/api/holyrics-routes', { method: 'POST', body: JSON.stringify(fields) });
     event.target.reset();
     toast('Rota adicionada.');
+  } catch (error) { toast(error.message, true); }
+});
+$('#holyricsHostForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  try {
+    const origin = new FormData(event.target).get('origin');
+    await api('/api/holyrics-host', { method: 'POST', body: JSON.stringify({ origin }) });
+    toast('IP e porta atualizados em todas as rotas.');
   } catch (error) { toast(error.message, true); }
 });

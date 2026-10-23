@@ -36,6 +36,7 @@ h1{font-size:clamp(27px,3vw,36px);letter-spacing:-.05em;line-height:1.15;margin:
 .port{border:1px solid #cadcf3;background:#edf5ff;color:#3d6fae;border-radius:7px;padding:8px 12px;font-size:11px;font-weight:850;letter-spacing:.08em}
 .two-column{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(290px,.9fr);gap:20px;align-items:start}
 .card{background:#fff;border:1px solid #e2eaf2;border-radius:14px;box-shadow:0 8px 25px #20375208;padding:24px}
+.host-card{margin-bottom:20px}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
 h2{font-size:18px;letter-spacing:-.03em;margin:4px 0 0}
 .live{display:flex;align-items:center;gap:8px;background:#eef9f4;color:#1a8a60;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:750}

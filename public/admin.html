@@ -42,6 +42,7 @@
               </div>
               <div id="manualColorField" class="color-field" hidden><input id="clockColor" type="color"><span id="colorHex">#ff1a1a</span></div>
               <label class="field-label" for="font">Fonte</label><select id="font"><option value="digital">Digital · 7 segmentos</option><option value="mono">Monoespaçada</option></select>
+              <label class="switch-row"><span><strong>Exibir segundos</strong><small>Desative para mostrar apenas horas e minutos</small></span><input id="seconds" type="checkbox" role="switch" checked></label>
               <label class="switch-row"><span><strong>Exibir décimos</strong><small>Mostra uma casa decimal após os segundos</small></span><input id="tenths" type="checkbox" role="switch"></label>
             </div>
           </div>
@@ -53,13 +54,14 @@
               <div class="mode-tabs"><button type="button" id="modeMessage" class="mode active">Mensagem</button><button type="button" id="modeUpload" class="mode">Imagem ou vídeo</button><button type="button" id="modeHolyrics" class="mode">Holyrics</button></div>
               <form id="messageForm"><label class="field-label" for="messageInput">Texto na tela</label><textarea id="messageInput" name="message" rows="4" placeholder="Aguardando conteúdo"></textarea><button class="button primary" type="submit">Exibir mensagem na HDMI</button></form>
               <form id="uploadForm" hidden><label class="field-label" for="mediaFile">Arquivo de imagem ou vídeo</label><input id="mediaFile" name="file" type="file" accept="image/*,video/*" required><label class="field-label" for="fit">Ajuste à tela</label><select id="fit" name="fit"><option value="contain">Exibir inteiro, sem cortar</option><option value="cover">Preencher a tela</option></select><button class="button primary" type="submit">Enviar e reproduzir</button></form>
-              <form id="holyricsForm" hidden><label class="field-label" for="routeSelect">Rota do Holyrics</label><select name="url" id="routeSelect"></select><p class="help">A página publicada pelo Holyrics será aberta na HDMI.</p><button class="button primary" type="submit">Exibir Holyrics na HDMI</button></form>
+              <form id="holyricsForm" hidden><label class="field-label" for="routeSelect">Rota do Holyrics</label><select name="url" id="routeSelect"></select><p class="help">A página publicada pelo Holyrics será aberta diretamente na HDMI, sem passar pelo painel.</p><button class="button secondary" id="checkHolyrics" type="button">Testar conexão</button><p class="help" id="holyricsCheckResult" role="status"></p><button class="button primary" type="submit">Exibir Holyrics na HDMI</button></form>
             </div>
             <div class="card now-playing"><span class="eyebrow">EM EXIBIÇÃO</span><div class="output-icon">▣</div><h2 id="hdmiCurrent">Aguardando conteúdo</h2><p id="hdmiDetail">Nenhuma mídia selecionada</p><div class="output-foot"><span class="dot"></span> Saída HDMI</div></div>
           </div>
         </section>
         <section id="routes" class="tab">
           <div class="page-title"><div><div class="eyebrow">INTEGRAÇÃO</div><h1>Rotas do Holyrics</h1><p>Gerencie os endereços disponíveis para reprodução na HDMI.</p></div></div>
+          <div class="card host-card"><div class="card-head"><div><span class="eyebrow">SERVIDOR HOLYRICS</span><h2>IP e porta</h2></div></div><form id="holyricsHostForm"><label class="field-label" for="holyricsHost">Endereço do computador com Holyrics</label><input id="holyricsHost" name="origin" type="url" placeholder="http://192.168.15.50:80" required><p class="help">Atualiza o servidor de todas as rotas abaixo, mantendo /view/widescreen, /view/text e os demais caminhos.</p><button class="button primary" type="submit">Atualizar IP e porta</button></form></div>
           <div class="two-column"><div class="card"><div class="card-head"><div><span class="eyebrow">ROTAS SALVAS</span><h2>Endereços disponíveis</h2></div><span id="routeCount" class="count">0</span></div><ul id="routeList"></ul></div>
             <div class="card"><div class="card-head"><div><span class="eyebrow">NOVA ROTA</span><h2>Adicionar endereço</h2></div></div><form id="routeForm"><label class="field-label" for="routeName">Nome</label><input id="routeName" name="name" required maxlength="80" placeholder="Ex.: Widescreen"><label class="field-label" for="routeUrl">URL completa</label><input id="routeUrl" name="url" type="url" placeholder="http://IP:porta/view/widescreen" required><p class="help">Cadastre uma nova rota caso IP, porta ou caminho mudem.</p><button class="button primary" type="submit">Adicionar rota</button></form></div>
           </div>

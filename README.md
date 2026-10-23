@@ -32,7 +32,7 @@ O procedimento reproduzível completo, incluindo a instalação do Debian sem de
 
 ## Holyrics
 
-As cinco rotas fornecidas já são incluídas por padrão. É possível cadastrar, excluir e selecionar outras no painel. O HDMI abre a rota escolhida por `/holyrics?url=...`, um proxy de mesma origem; assim não há polling, captura de tela ou atraso introduzido pela aplicação. A atualização continua sendo feita diretamente pela página do Holyrics.
+As cinco rotas fornecidas já são incluídas por padrão. No painel, **Holyrics → IP e porta** troca o servidor de todas as rotas, preservando os caminhos; também é possível cadastrar, excluir e selecionar rotas individuais. Em **Conteúdo → Holyrics → Testar conexão**, o próprio ViewCPJC verifica se a rota responde. O HDMI abre a rota escolhida diretamente no navegador, sem proxy, polling ou captura de tela introduzidos pela aplicação. O plugin Holyrics deve estar iniciado e o computador ViewCPJC precisa alcançar o IP e a porta configurados.
 
 ## Segurança antes de expor a outras redes
 

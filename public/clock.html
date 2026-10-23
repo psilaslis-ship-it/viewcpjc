@@ -1,9 +1,9 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contador VGA</title><link rel="stylesheet" href="/displays.css"><script src="/socket.io/socket.io.js"></script><script src="/common.js"></script></head><body class="clock-body"><main id="clock" aria-label="Contador">00:00:00</main><script>
-let clockState={elapsedSeconds:0,running:false,startedAt:null,background:'#080808',colorMode:'auto',color:'#ff1a1a'}, tenths=false, lastLength=0;
-function format(seconds){const t=Math.max(0, seconds);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60);return [h,m,s].map(v=>String(v).padStart(2,'0')).join(':')+(tenths?'.'+String(Math.floor((t%1)*10)): '');}
+let clockState={elapsedSeconds:0,running:false,startedAt:null,background:'#080808',colorMode:'auto',color:'#ff1a1a'}, tenths=false, showSeconds=true, lastLength=0;
+function format(seconds){const t=Math.max(0, seconds);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60);const parts=[h,m];if(showSeconds)parts.push(s);return parts.map(v=>String(v).padStart(2,'0')).join(':')+(showSeconds&&tenths?'.'+String(Math.floor((t%1)*10)): '');}
 function fitClock(){const el=document.querySelector('#clock');el.style.setProperty('--clock-scale-x',Math.min(1,innerWidth*.94/el.offsetWidth).toFixed(3));}
 function tick(){const el=document.querySelector('#clock'),value=format(clockSeconds(clockState));el.textContent=value;if(value.length!==lastLength){lastLength=value.length;fitClock()}requestAnimationFrame(tick)}tick();
 addEventListener('resize',fitClock);
 document.fonts.ready.then(fitClock);
-addEventListener('display-state', e=>{clockState=e.detail.clock;tenths=clockState.showTenths;document.body.style.background=clockState.background;const el=document.querySelector('#clock');el.style.color=clockColor(clockState);el.dataset.font=clockState.font;requestAnimationFrame(fitClock);});
+addEventListener('display-state', e=>{clockState=e.detail.clock;tenths=clockState.showTenths;showSeconds=clockState.showSeconds!==false;document.body.style.background=clockState.background;const el=document.querySelector('#clock');el.style.color=clockColor(clockState);el.dataset.font=clockState.font;requestAnimationFrame(fitClock);});
 </script></body></html>
