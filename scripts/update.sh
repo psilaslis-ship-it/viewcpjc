@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 APP_DIR="/opt/viewcpjc"
 BRANCH="main"
-[[ $EUID -eq 0 ]] || { echo "Execute com sudo." >&2; exit 1; }
+[[ $EUID -eq 0 ]] || { echo "Execute como root." >&2; exit 1; }
 [[ -d "$APP_DIR/.git" ]] || { echo "Aplicação não instalada em $APP_DIR. Execute install.sh primeiro." >&2; exit 1; }
 
 apt-get install -y --no-install-recommends wmctrl

@@ -47,6 +47,8 @@ const upload = multer({
 app.use(express.json({ limit: '1mb' }));
 app.use('/media', express.static(UPLOAD_DIR, { fallthrough: false }));
 app.get('/fonts/dseg7-bold.ttf', (_, res) => res.sendFile('/usr/share/fonts/truetype/dseg/DSEG7Classic-Bold.ttf'));
+// Nome público do player remoto; /hdmi.html continua válido para instalações antigas.
+app.get('/player.html', (_, res) => res.sendFile(path.join(APP_ROOT, 'public', 'hdmi.html')));
 app.use(express.static(path.join(APP_ROOT, 'public')));
 
 function publish() { saveConfig(); io.emit('state', publicState()); }

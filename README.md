@@ -1,12 +1,10 @@
 # Dual Display Player
 
-MVP local para um computador Linux com duas saídas: contador digital na VGA e player de mídia/Holyrics na HDMI. O navegador de cada tela é separado; o painel só controla o estado por Socket.IO na rede local.
+O computador Debian exibe somente o contador digital na VGA. O TV box exibe mídia e Holyrics pelo navegador, acessando `http://IP-DO-DEBIAN:8080/player.html`. O painel de controle fica em `http://IP-DO-DEBIAN:8080/admin.html`. Os dois players recebem estados independentes por Socket.IO na rede local.
 
 No painel, a cor do contador começa em **contraste automático**: dígitos claros sobre fundo escuro e dígitos escuros sobre fundo claro. Em **cor personalizada**, é possível escolher a cor dos dígitos independentemente do fundo. Configurações existentes são preservadas; instalações anteriores passam ao modo automático quando atualizadas.
 
-Os players VGA e HDMI abrem em janelas separadas sem barras do navegador. O `wmctrl` coloca cada janela em tela cheia no respectivo monitor após o Openbox iniciá-la. Em instalações anteriores a esta mudança, instale `wmctrl` uma vez antes de executar o script de atualização; instalações novas já incluem o pacote.
-Se a HDMI estiver desconectada na inicialização, o contador VGA continua funcionando e o player HDMI abre assim que o Xorg detectar a conexão.
-O ponteiro fica oculto nas telas de reprodução após um segundo de inatividade, e o Chromium desses players não oferece tradução de páginas. O script `scripts/configure-kiosk.sh` instala essa configuração no Debian.
+O contador VGA abre sem barras do navegador e em tela cheia pelo Openbox. O HDMI do Debian não é mais usado. O TV box precisa ter navegador compatível e manter `player.html` aberta em tela cheia; inicialização automática depende do modelo e sistema do aparelho. O ponteiro do Debian fica oculto após um segundo de inatividade e o Chromium do contador não oferece tradução de páginas.
 
 ## Executar para desenvolvimento
 
@@ -15,7 +13,7 @@ npm install
 npm start
 ```
 
-Abra `http://IP-DO-SERVIDOR:8080/admin.html`. As telas de reprodução são `clock.html` e `hdmi.html`.
+Abra `http://IP-DO-SERVIDOR:8080/admin.html`. O contador local usa `clock.html`; o TV box usa `player.html` (`hdmi.html` continua disponível como endereço legado).
 
 ## Implantação
 
@@ -23,16 +21,11 @@ O procedimento reproduzível completo, incluindo a instalação do Debian sem de
 
 ## Implantação manual resumida (Debian 13)
 
-1. Instale `nodejs`, `chromium`, `xserver-xorg`, um WM leve (Openbox ou i3), `fonts-dseg`, e os drivers gráficos corretos. O pacote `fonts-dseg` fornece a fonte de sete segmentos usada como padrão pelo contador.
-2. Copie a aplicação para `/opt/dual-display-player`; crie o usuário de serviço `display` e o diretório `/var/lib/dual-display-player` pertencentes a ele.
-3. Rode `npm ci --omit=dev` em `/opt/dual-display-player` e habilite `deploy/dual-display-player.service` com `systemctl enable --now`.
-4. Inicialize uma única sessão X leve no boot (sem desktop completo) e execute `deploy/start-displays.sh` nela. Antes disso, confira os nomes reais com `xrandr --query`; HDMI/VGA podem aparecer como `HDMI-1`, `HDMI-A-0`, `VGA-1` etc.
-5. Fixe a posição de cada janela no gerenciador leve. Em produção, configure as regras pelo `WM_CLASS` `VgaClock` e `HdmiPlayer`, em monitores distintos, sem decoração e em tela cheia.
-6. Reserve IP DHCP ou configure IP estático e acesse o painel em `http://IP:8080/admin.html`. Se houver DNS local, crie um registro como `painel-igreja.lan` apontando para esse IP.
+Use o [guia de instalação](docs/INSTALACAO-PT-BR.md) e os scripts `scripts/install.sh` e `scripts/update.sh`. Reserve o IP do Debian no DHCP do roteador para que o endereço do player não mude.
 
 ## Holyrics
 
-As cinco rotas fornecidas já são incluídas por padrão. No painel, **Holyrics → IP e porta** troca o servidor de todas as rotas, preservando os caminhos; também é possível cadastrar, excluir e selecionar rotas individuais. Em **Conteúdo → Holyrics → Testar conexão**, o próprio ViewCPJC verifica se a rota responde. O HDMI abre a rota escolhida diretamente no navegador, sem proxy, polling ou captura de tela introduzidos pela aplicação. O plugin Holyrics deve estar iniciado e o computador ViewCPJC precisa alcançar o IP e a porta configurados.
+As cinco rotas fornecidas já são incluídas por padrão. No painel, **Holyrics → IP e porta** troca o servidor de todas as rotas, preservando os caminhos; também é possível cadastrar, excluir e selecionar rotas individuais. Em **Conteúdo → Holyrics → Testar conexão**, o Debian verifica se a rota responde. O navegador do TV box abre a rota escolhida diretamente, sem proxy ou captura de tela introduzidos pela aplicação. O plugin Holyrics deve estar iniciado e **tanto o Debian quanto o TV box** precisam alcançar o IP e a porta configurados. Endereços `169.254.x.x` não devem ser presumidos acessíveis pela rede local `192.168.x.x`; configure no painel o endereço LAN atual do computador com Holyrics.
 
 ## Segurança antes de expor a outras redes
 

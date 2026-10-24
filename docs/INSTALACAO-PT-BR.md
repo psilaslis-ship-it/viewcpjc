@@ -2,8 +2,8 @@
 
 ## 1. Preparar o computador
 
-- Confirme que a placa de vídeo oferece HDMI e VGA simultâneos; conecte os dois monitores antes de iniciar o sistema.
-- Prefira SSD, 4 GB de RAM ou mais e conexão Ethernet. Não instale ambiente de desktop: a solução inicia apenas o Xorg, Openbox e os dois players.
+- Conecte somente o monitor do contador à VGA do computador Debian. A TV será conectada ao HDMI do TV box, que deve estar na mesma rede local.
+- Prefira SSD e conexão Ethernet. Não instale ambiente de desktop: a solução inicia apenas o Xorg, Openbox e o contador local.
 - Baixe a imagem **Debian 13 netinst amd64** no site oficial, grave um pendrive com Balena Etcher ou Rufus e inicialize por ele.
 
 ## 2. Instalar o Debian
@@ -19,29 +19,29 @@
 No terminal do Debian, execute cada comando:
 
 ```bash
-sudo apt update
-sudo apt install -y git
+apt update
+apt install -y git
 git clone https://github.com/psilaslis-ship-it/viewcpjc.git
 cd viewcpjc
-sudo ./scripts/install.sh
+./scripts/install.sh
 ```
 
-O instalador instala dependências, baixa a cópia operacional em `/opt/viewcpjc`, cria os serviços de inicialização e preserva dados em `/var/lib/viewcpjc`. Com HDMI e VGA conectados, ele detecta e grava automaticamente os nomes das saídas Linux no primeiro uso.
+O instalador instala dependências, baixa a cópia operacional em `/opt/viewcpjc`, cria os serviços de inicialização e preserva dados em `/var/lib/viewcpjc`. Com VGA conectada, ele detecta e grava automaticamente o nome da saída Linux no primeiro uso.
 
-## 4. Associar HDMI e VGA corretamente
+## 4. Conferir a saída VGA
 
 No primeiro boot, as telas podem ficar sem conteúdo caso os conectores tenham nomes diferentes dos exemplos. No console, rode:
 
 ```bash
 DISPLAY=:0 xrandr --query
-sudo nano /etc/viewcpjc/display.conf
-sudo systemctl restart viewcpjc-display
+nano /etc/viewcpjc/display.conf
+systemctl restart viewcpjc-display
 ```
 
-Troque `HDMI-1` e `VGA-1` pelos nomes mostrados em `xrandr`. A VGA é posicionada à esquerda da HDMI. O comando abaixo mostra diagnóstico se algo não abrir:
+Troque `VGA-1` pelo nome mostrado em `xrandr` se necessário. O comando abaixo mostra diagnóstico se o contador não abrir:
 
 ```bash
-sudo journalctl -u viewcpjc-display -n 100 --no-pager
+journalctl -u viewcpjc-display -n 100 --no-pager
 ```
 
 ## 5. Usar pela rede local
@@ -52,16 +52,24 @@ No equipamento, descubra o IP com `hostname -I`. Em outro computador da mesma re
 http://IP-DO-SERVIDOR:8080/admin.html
 ```
 
-Para um nome fácil, crie no DNS local do roteador/AdGuard/Pi-hole um registro A, por exemplo `viewcpjc.lan`, apontando para o IP reservado do servidor. Reserve esse IP no DHCP do roteador para ele não mudar.
+Na mesma rede, abra no navegador do TV box:
+
+```text
+http://IP-DO-SERVIDOR:8080/player.html
+```
+
+Ative a tela cheia no navegador do TV box, se disponível. O TV box deve manter a página aberta; a inicialização automática depende do sistema e modelo do aparelho. Primeiro teste uma mensagem e depois uma imagem/vídeo pelo painel. Para o Holyrics, altere **Holyrics → IP e porta** para o IP atual do computador com Holyrics na LAN. O endereço antigo `169.254.83.107` não respondeu a partir do Debian na rede `192.168.15.x`; ele não deve ser usado até que a conectividade seja corrigida. Teste a rota no painel e abra a mesma URL diretamente no navegador do TV box.
+
+Para um nome fácil, crie no DNS local do roteador/AdGuard/Pi-hole um registro A, por exemplo `viewcpjc.lan`, apontando para o IP reservado do Debian. Reserve esse IP no DHCP do roteador para ele não mudar.
 
 ## 6. Atualizar
 
 ```bash
 cd /opt/viewcpjc
-sudo ./scripts/update.sh
+./scripts/update.sh
 ```
 
-O atualizador interrompe os players, obtém a versão `main` do GitHub, atualiza os pacotes, e reinicia os dois serviços. Configurações, uploads e o estado atual não são apagados.
+O atualizador interrompe o contador local, obtém a versão `main` do GitHub, atualiza os pacotes e reinicia os serviços. Configurações, uploads e o estado atual não são apagados. A página do TV box pode precisar ser recarregada após a atualização.
 
 ## Segurança
 

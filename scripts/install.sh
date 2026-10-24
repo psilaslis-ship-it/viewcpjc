@@ -16,7 +16,7 @@ while (($#)); do
     *) echo "Uso: $0 [--repo URL] [--branch NOME]" >&2; exit 2 ;;
   esac
 done
-[[ $EUID -eq 0 ]] || { echo "Execute com sudo." >&2; exit 1; }
+[[ $EUID -eq 0 ]] || { echo "Execute como root." >&2; exit 1; }
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
@@ -48,21 +48,19 @@ if [[ ! -f "$DATA_DIR/config.json" ]]; then
   install -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0640 config/default.json "$DATA_DIR/config.json"
 fi
 if [[ ! -f "$ETC_DIR/display.conf" ]]; then
-  # Descobre nomes DRM reais (por exemplo, HDMI-A-1 e VGA-1) antes do primeiro boot.
-  hdmi_detected=""
+  # Descobre o nome DRM da VGA antes do primeiro boot.
   vga_detected=""
   for status_file in /sys/class/drm/*/status; do
     [[ $(cat "$status_file") == "connected" ]] || continue
     connector=$(basename "$(dirname "$status_file")")
-    [[ $connector == *HDMI* ]] && hdmi_detected=${connector#*-}
     [[ $connector == *VGA* ]] && vga_detected=${connector#*-}
   done
-  if [[ -n "$hdmi_detected" && -n "$vga_detected" ]]; then
-    printf 'HDMI_OUTPUT="%s"\nVGA_OUTPUT="%s"\n' "$hdmi_detected" "$vga_detected" > "$ETC_DIR/display.conf"
-    echo "Saídas detectadas: HDMI=$hdmi_detected, VGA=$vga_detected"
+  if [[ -n "$vga_detected" ]]; then
+    printf 'VGA_OUTPUT="%s"\n' "$vga_detected" > "$ETC_DIR/display.conf"
+    echo "Saída detectada: VGA=$vga_detected"
   else
     install -m 0644 deploy/display.conf.example "$ETC_DIR/display.conf"
-    echo "Não foi possível detectar HDMI e VGA conectados; ajuste $ETC_DIR/display.conf depois da instalação."
+    echo "Não foi possível detectar VGA conectada; ajuste $ETC_DIR/display.conf depois da instalação."
   fi
 fi
 

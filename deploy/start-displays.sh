@@ -7,22 +7,18 @@ source /etc/viewcpjc/display.conf
 # Aguarda o painel estar pronto após boot/reinício.
 until curl --silent --fail "$BASE_URL/api/state" >/dev/null; do sleep 1; done
 
-# O kernel pode expor HDMI-A-1, enquanto Xorg o chama HDMI-1. Resolve ambos os casos.
+# O kernel pode expor nomes diferentes dos usados pelo Xorg.
 resolve_x_output() {
-  local wanted="$1" prefix="${1%%-*}" candidate require_connected="${2:-yes}"
-  candidate=$(xrandr --query | awk -v output="$wanted" -v connected="$require_connected" '$1 == output && (connected == "no" || $2 == "connected") {print $1; exit}')
+  local wanted="$1" prefix="${1%%-*}" candidate
+  candidate=$(xrandr --query | awk -v output="$wanted" '$1 == output && $2 == "connected" {print $1; exit}')
   if [[ -z "$candidate" ]]; then
     candidate=$(xrandr --query | awk -v type="$prefix" '$1 ~ ("^" type "-") && $2 == "connected" {print $1; exit}')
-  fi
-  if [[ -z "$candidate" && "$require_connected" == "no" ]]; then
-    candidate=$(xrandr --query | awk -v type="$prefix" '$1 ~ ("^" type "-") {print $1; exit}')
   fi
   [[ -n "$candidate" ]] || { echo "Saída Xorg não encontrada para: $wanted" >&2; return 1; }
   printf '%s\n' "$candidate"
 }
 VGA_OUTPUT=$(resolve_x_output "$VGA_OUTPUT")
-HDMI_OUTPUT=$(resolve_x_output "$HDMI_OUTPUT" no) || HDMI_OUTPUT=""
-echo "Saídas Xorg em uso: HDMI=$HDMI_OUTPUT; VGA=$VGA_OUTPUT"
+echo "Saída Xorg do contador: VGA=$VGA_OUTPUT"
 
 xrandr --output "$VGA_OUTPUT" --auto --primary --pos 0x0
 
@@ -54,23 +50,7 @@ fullscreen_window() {
   return 1
 }
 
-# A VGA não depende de cabo, TV ou duplicador HDMI. Mantém o Xorg vivo e
-# aguarda a conexão HDMI sem reiniciar o contador.
+# O conteúdo do TV box é servido por HTTP, sem depender de uma saída local HDMI.
 launch clock.html "$vga_geometry" /var/lib/viewcpjc/chromium-vga
 fullscreen_window "Contador VGA" || true
-hdmi_started=no
-while true; do
-  if [[ -n "$HDMI_OUTPUT" ]] && xrandr --query | awk -v output="$HDMI_OUTPUT" '$1 == output && $2 == "connected" {found=1} END {exit !found}'; then
-    if [[ "$hdmi_started" == no ]]; then
-      if xrandr --output "$HDMI_OUTPUT" --auto --right-of "$VGA_OUTPUT"; then
-        hdmi_geometry=$(geometry_for "$HDMI_OUTPUT")
-        if [[ -n "$hdmi_geometry" ]]; then
-          launch hdmi.html "$hdmi_geometry" /var/lib/viewcpjc/chromium-hdmi
-          fullscreen_window "Player HDMI" || true
-          hdmi_started=yes
-        fi
-      fi
-    fi
-  fi
-  sleep 2
-done
+wait

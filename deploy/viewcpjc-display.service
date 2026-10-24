@@ -1,5 +1,5 @@
 [Unit]
-Description=ViewCPJC - players VGA e HDMI
+Description=ViewCPJC - contador VGA
 After=viewcpjc.service
 Requires=viewcpjc.service
 

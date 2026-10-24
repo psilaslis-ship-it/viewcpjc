@@ -1,5 +1,6 @@
 const $ = selector => document.querySelector(selector);
 let toastTimer;
+$('#playerAddress').textContent = `${location.origin}/player.html`;
 
 function toast(message, error = false) {
   const element = $('#toast');
@@ -130,11 +131,11 @@ $('#checkHolyrics').addEventListener('click', async () => {
 });
 $('#messageForm').addEventListener('submit', event => {
   event.preventDefault();
-  setHdmi({ mode: 'message', message: new FormData(event.target).get('message') }).then(() => toast('Mensagem enviada à HDMI.')).catch(error => toast(error.message, true));
+  setHdmi({ mode: 'message', message: new FormData(event.target).get('message') }).then(() => toast('Mensagem selecionada para o TV box.')).catch(error => toast(error.message, true));
 });
 $('#holyricsForm').addEventListener('submit', event => {
   event.preventDefault();
-  setHdmi({ mode: 'holyrics', source: new FormData(event.target).get('url') }).then(() => toast('Holyrics enviado à HDMI.')).catch(error => toast(error.message, true));
+  setHdmi({ mode: 'holyrics', source: new FormData(event.target).get('url') }).then(() => toast('Holyrics selecionado para o TV box.')).catch(error => toast(error.message, true));
 });
 $('#uploadForm').addEventListener('submit', async event => {
   event.preventDefault();
@@ -147,7 +148,7 @@ $('#uploadForm').addEventListener('submit', async event => {
     const uploaded = await response.json();
     if (!response.ok) throw new Error(uploaded.error || 'Falha no envio');
     await setHdmi({ mode: uploaded.type, source: uploaded.url, fit: form.get('fit') });
-    toast('Mídia enviada à HDMI.');
+    toast('Mídia selecionada para o TV box.');
   } catch (error) { toast(error.message, true); }
   finally { button.disabled = false; button.textContent = 'Enviar e reproduzir'; }
 });
